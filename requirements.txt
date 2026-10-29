@@ -1,0 +1,34 @@
+# Projet 4 : Analyse des données de vente et retours
+# Installation : pip install -r requirements.txt
+
+# Données
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14.0            # lecture et écriture des fichiers Parquet
+openpyxl>=3.1            # lecture et écriture Excel
+
+# Connexion à SQL Server (Connexion.py)
+sqlalchemy>=2.0
+pyodbc>=5.0
+
+# Visualisation
+matplotlib>=3.7
+seaborn>=0.13
+plotly>=5.18
+
+# Statistiques et modélisation
+scipy>=1.11
+statsmodels>=0.14
+scikit-learn>=1.3
+shap>=0.44
+
+# Optimisation (prescriptif)
+pulp>=2.7
+
+# Notebooks, pipeline et tests
+jupyter>=1.0
+ipykernel>=6.25
+papermill>=2.5
+nbstripout>=0.7
+pytest>=7.4
+holidays>=0.50

@@ -1,0 +1,44 @@
+# Données : lourdes, partagées par OneDrive ou Teams, jamais sur GitHub
+data/
+
+# Copies exécutées des notebooks (générées par run_pipeline.py)
+notebooks/executes/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Environnement virtuel
+.venv/
+venv/
+env/
+
+# Fichiers temporaires Office et système
+~$*
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/
+
+# Archives et fichiers lourds
+Autres/
+*.bak
+*.zip
+
+# Archives et fichiers lourds
+Autres/
+*.bak
+*.zip
+
+# Archives et fichiers lourds
+Autres/
+*.bak
+*.zip
+
+# Autres environnements virtuels
+.venv*/
