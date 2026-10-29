@@ -1,5 +1,5 @@
 """
-Extraction.py : extraction unique de toutes les données Contoso du projet, depuis SQL Server.
+extraction.py : extraction unique de toutes les données Contoso du projet, depuis SQL Server.
 
 Remplace Connexion.py, Extraction_charges.py et Extraction_2019_stock.py.
 
@@ -22,7 +22,7 @@ Premier lancement après l'ancienne organisation : les anciens dossiers (Sales_c
 Plan_2019, Objectifs, Ventes_en_ligne...) sont DÉPLACÉS dans data/raw/_ancien, pas supprimés.
 Une fois les notebooks relancés et vérifiés, supprimer data/raw/_ancien à la main.
 
-Lancement, depuis le dossier Projet ADD :  python Extraction.py
+Lancement, depuis le dossier Projet ADD :  python -m src.extraction
 Durée : une dizaine de minutes. Lecture seule sur la base.
 """
 import shutil

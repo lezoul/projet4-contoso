@@ -1,5 +1,5 @@
 """
-Contexte.py : collecte des données de contexte, par pays et par jour.
+contexte.py : collecte des données de contexte, par pays et par jour.
 
 Produit dans data/raw/contexte/ :
   - jours_feries.csv    : jours fériés des pays de nos boutiques, pour toutes les années étudiées
@@ -16,7 +16,7 @@ Avant de lancer ce script :
      et le déposer tel quel dans data/raw/contexte/ (son nom doit commencer par "OxCGRT").
      Sans ce fichier, le script produit quand même les jours fériés.
 
-Lancement, depuis le dossier Projet ADD :  python Contexte.py
+Lancement, depuis le dossier Projet ADD :  python -m src.contexte
 """
 import pandas as pd
 

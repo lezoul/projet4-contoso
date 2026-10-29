@@ -23,8 +23,8 @@ RAW = DATA / "raw"                      # 1. BRUT : jamais modifié
 #
 #   data/raw/
 #   ├── professeur/     les 6 fichiers fournis par le professeur (jamais modifiés, jamais régénérés)
-#   ├── contexte/       jours fériés et sévérité COVID-19 (Contexte.py)
-#   └── contoso/        tout ce qui est extrait de la base Contoso par Extraction.py
+#   ├── contexte/       jours fériés et sévérité COVID-19 (src/contexte.py)
+#   └── contoso/        tout ce qui est extrait de la base Contoso par src/extraction.py
 #       ├── Dim/        tables de dimension
 #       ├── Sales/      ventes (FactSales) par trimestre, clés canal et devise,
 #       │               et ventes en ligne détaillées (FactOnlineSales) par année
@@ -38,14 +38,14 @@ DIM = CONTOSO / "Dim"
 SALES_CONTOSO = CONTOSO / "Sales"
 PLAN = CONTOSO / "Plan"
 STOCK = CONTOSO / "Stock"
-ANCIEN = RAW / "_ancien"                # anciens dossiers, rangés là par Extraction.py lors du passage à cette structure
+ANCIEN = RAW / "_ancien"                # anciens dossiers, rangés là par src/extraction.py lors du passage à cette structure
 
 # Deux sources de ventes, toutes deux au même format (mêmes 14 colonnes, mêmes noms de fichiers) :
 #   SALES_PROF    : fichiers fournis par le professeur. C'est la table FactSales de nos 56 boutiques,
 #                   LIMITÉE à 5 catégories de produits sur 8 et aux trimestres 1 à 3 de 2020 et 2021
 #                   (144 874 lignes, environ 37 % du chiffre d'affaires de ces deux années).
 #   SALES_COMPLET : toutes les lignes de FactSales pour ces mêmes boutiques, sur toutes les années
-#                   extraites (8 catégories, tous les trimestres). Écrit par Extraction.py.
+#                   extraites (8 catégories, tous les trimestres). Écrit par src/extraction.py.
 SALES_PROF = PROFESSEUR
 SALES_COMPLET = SALES_CONTOSO
 
@@ -64,7 +64,7 @@ CLEAN = DATA / "clean"                  # 3. VALIDÉ : prêt pour l'analyse
 CLEAN_DIMENSIONS = CLEAN / "dimensions"
 AGREGATS = CLEAN / "agregats"
 
-OUTPUTS = DATA / "outputs"              # 4. RÉSULTATS : lus par Power BI et Excel
+OUTPUTS = DATA / "outputs"              # 4. RÉSULTATS : lus par l'application Streamlit
 PREDICTIONS = OUTPUTS / "predictions"
 SCENARIOS = OUTPUTS / "scenarios"
 OPTIMISATION = OUTPUTS / "optimisation"
@@ -96,7 +96,7 @@ ANNEES_ATTENDUES = [2020, 2021]
 # d'où vient la situation de 2020 et 2021.
 ANNEE_REFERENCE = 2019
 # Années étudiées : la référence, puis le périmètre de l'énoncé. Ce sont les années extraites de la
-# base par Extraction.py et chargées par tous les notebooks.
+# base par src/extraction.py et chargées par tous les notebooks.
 ANNEES_ETUDE = [ANNEE_REFERENCE] + ANNEES_ATTENDUES
 ANNEES_EXTRAITES = ANNEES_ETUDE
 # Dernier exercice : c'est sur lui que sont chiffrés la situation de l'entreprise et les leviers
@@ -147,7 +147,7 @@ TABLES_PLAN = ["DimAccount", "DimScenario", "DimEntity"]
 # et employés (aucune clé vers une boutique)
 TABLES_COMPLEMENT = ["DimCustomer", "DimEmployee"]
 
-# Fichiers écrits par Extraction.py
+# Fichiers écrits par src/extraction.py
 FICHIER_CLES_CANAL_DEVISE = "FactSales_cles_canal_devise.csv"   # canal et devise de chaque vente (IdVente = SalesKey)
 MOTIF_FICHIERS_EN_LIGNE = "FactOnlineSales *.parquet"           # ventes en ligne détaillées, un fichier par année
 FICHIER_PLAN = "FactStrategyPlan.csv"                           # charges par boutique, mois, scénario, compte, catégorie
@@ -155,7 +155,7 @@ FICHIER_OBJECTIFS = "FactSalesQuota.parquet"                    # objectifs de v
 FICHIER_STOCK = "FactInventory.parquet"                         # stock hebdomadaire par boutique et produit
 
 # ---------------------------------------------------------------------------
-# Paramètres du modèle en flocon (02_flocon) et des données de contexte (Contexte.py)
+# Paramètres du modèle en flocon (02_flocon) et des données de contexte (src/contexte.py)
 # ---------------------------------------------------------------------------
 # Calendrier de l'étude : du premier au dernier jour des années étudiées
 DATE_DEBUT = f"{min(ANNEES_ETUDE)}-01-01"
@@ -193,14 +193,14 @@ PAYS_ISO = {
     "the Netherlands": ("NL", "NLD"),
 }
 
-# Fichiers de contexte (data/raw/contexte), produits par Contexte.py
+# Fichiers de contexte (data/raw/contexte), produits par src/contexte.py
 FICHIER_JOURS_FERIES = "jours_feries.csv"
 FICHIER_SEVERITE_COVID = "severite_covid.csv"
 # Fichier source OxCGRT téléchargé à la main et déposé dans data/raw/contexte
 MOTIF_OXCGRT = "OxCGRT*.csv"
 
 # ---------------------------------------------------------------------------
-# Connexion SQL Server (utilisée par Extraction.py)
+# Connexion SQL Server (utilisée par src/extraction.py)
 # ---------------------------------------------------------------------------
 SQL_DRIVER = "ODBC Driver 17 for SQL Server"
 SQL_SERVER = r"YACINE-LAPTOP\SQLEXPRESS"
