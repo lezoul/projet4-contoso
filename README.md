@@ -49,6 +49,12 @@ L'étude porte sur le dernier exercice, 2021, qui est la situation à régler. 2
 
 Ce sont des pistes de réflexion pour le métier, pas des décisions : chaque levier repose sur des hypothèses explicitées dans le rapport.
 
+**Prévision et simulation de 2022 (UA3)**
+- Avec trois exercices d'historique, aucune méthode ne prévoit le chiffre d'affaires annuel à mieux qu'environ ±10 % : le lissage saisonnier (Holt-Winters) fait aussi bien que le meilleur modèle d'apprentissage (Random Forest) et sert de base. Il prévoit 664,8 M$ pour 2022 (−3,4 %).
+- Sans décision, le résultat d'exploitation tomberait à 114,1 M$ en 2022 et 52 magasins sur 54 seraient déficitaires.
+- Le scénario complet (lancements, charges, publicité, remises) le porte à 193,1 M$ (+79,0 M$), avec 19 magasins déficitaires.
+- Le classement des leviers ne change pas d'une prévision à l'autre : le gain du scénario complet reste entre 78,2 et 80,4 M$ sur cinq bases différentes. La décision ne dépend donc pas de l'erreur de prévision.
+
 ## Données
 
 Les données viennent de la base publique **Contoso Retail DW** de Microsoft, restaurée dans SQL Server Express. Les dates de la base (2007 à 2009) sont décalées de 12 ans pour correspondre à l'énoncé (2019 à 2021).
@@ -83,8 +89,8 @@ Le dossier `data/` n'est pas versionné : il se reconstruit avec les scripts d'e
 | | `07_q2_promotions` | Q2 : effet et coût des promotions (avant et après, magasin témoin, corrélations) |
 | | `08_q3_q4_retours` | Q3 et Q4 : patterns de retour, lien avec les remises (régression logistique) |
 | | `09_q5_remises` | Q5 : niveaux de remise et marge, par canal et par segment |
-| Prédiction | `10` à `12` | À venir : prévision des ventes, départ des grands comptes en ligne, typologie des magasins |
-| Prescription | `13` et `14` | À venir : priorités de renouvellement de l'assortiment, simulateur de scénarios |
+| Prédiction | `10_prevision_ventes` | Prévision du chiffre d'affaires mensuel par boutique : modèles comparés en validation glissante, Optuna, MLflow, SHAP |
+| Prescription | `14_simulateur` | Simulateur de scénarios 2022 : base Holt-Winters, leviers chiffrés, robustesse, seuils de rentabilité |
 
 Les conclusions s'appuient sur des tests d'hypothèse (Mann-Whitney, Kruskal-Wallis, régressions) plutôt que sur de simples comparaisons de moyennes. Chaque notebook commente ses constats d'un point de vue métier.
 
@@ -92,11 +98,11 @@ Les conclusions s'appuient sur des tests d'hypothèse (Mann-Whitney, Kruskal-Wal
 
 ```
 projet4-contoso/
-├── Notebooks/
+├── notebooks/
 │   ├── 1_preparation/          00 à 05c : inventaire, ETL, modèle en flocon, diagnostic, nettoyage, variables
 │   ├── 2_analyses/             06 à 09 : une ou deux questions de recherche par notebook
-│   ├── 3_modeles/              notebooks prédictifs de l'UA3 (à venir)
-│   ├── 4_prescriptif/          notebooks prescriptifs de l'UA3 (à venir)
+│   ├── 3_modeles/              10 : prévision des ventes (scikit-learn, XGBoost, Optuna, MLflow, SHAP)
+│   ├── 4_prescriptif/          14 : simulateur de scénarios 2022
 │   └── executes/               copies exécutées produites par run_pipeline.py (non versionnées)
 ├── src/
 │   ├── config.py               tous les chemins et paramètres du projet, importés par les notebooks
@@ -104,6 +110,8 @@ projet4-contoso/
 │   ├── contexte.py             jours fériés et sévérité COVID-19 par pays et par jour
 │   ├── etl.py                  chargement et harmonisation des tables
 │   ├── analyse.py              fonctions statistiques partagées par les notebooks d'analyse
+│   ├── modeles.py              table de modélisation, mesure d'erreur (WAPE), prévision récursive
+│   ├── simulateur.py           moteur du simulateur de scénarios (notebook 14 et application)
 │   └── viz.py                  charte graphique commune (couleurs, police, formats)
 ├── data/                       non versionné
 │   ├── raw/                    brut, jamais modifié : professeur/, contexte/, contoso/ (Dim, Sales, Plan, Stock)
@@ -116,14 +124,16 @@ projet4-contoso/
 │   └── presentations/          présentation de l'UA1
 ├── dashboards/
 │   └── app_simulateur.py       application Streamlit : simulateur de scénarios 2022
-├── run_pipeline.py             exécution de tous les notebooks dans l'ordre (à venir)
+├── tests/                      tests pytest du simulateur
+├── mlruns/                     journal MLflow du notebook 10 (non versionné)
+├── run_pipeline.py             exécution de tous les notebooks dans l'ordre (Papermill)
 ├── requirements.txt
 └── README.md
 ```
 
 ## Installation
 
-Prérequis : Windows, Python 3.12, SQL Server Express et le pilote *ODBC Driver 17 for SQL Server*.
+Prérequis : Windows, Python 3.13, SQL Server Express et le pilote *ODBC Driver 17 for SQL Server*.
 
 ```powershell
 git clone https://github.com/lezoul/projet4-contoso.git
@@ -153,7 +163,18 @@ nbstripout --install            # retire les sorties des notebooks à chaque com
 
 ## Exécution
 
-Les notebooks s'exécutent dans l'ordre de leur numéro : `00`, `01`, `02`, `03`, `04`, `05`, `05b`, `05c`, puis `06b`, `06`, `07`, `08`, `09`. Chacun lit le dossier de l'étape précédente et écrit dans le suivant : `raw → interim → clean → outputs`.
+Les notebooks s'exécutent dans l'ordre de leur numéro : `00`, `01`, `02`, `03`, `04`, `05`, `05b`, `05c`, puis `06b`, `06`, `07`, `08`, `09`, puis `10` et `14`. Chacun lit le dossier de l'étape précédente et écrit dans le suivant : `raw → interim → clean → outputs`.
+
+`run_pipeline.py` les exécute tous dans cet ordre et range les copies exécutées dans `notebooks/executes/` :
+
+```powershell
+python run_pipeline.py                   # toute la chaîne
+python run_pipeline.py --depuis 10       # à partir du notebook 10
+python run_pipeline.py --seulement 14    # un seul notebook
+python run_pipeline.py --liste           # affiche l'ordre sans rien exécuter
+```
+
+Les tests du simulateur se lancent avec `python -m pytest` (ils sont ignorés si les données ne sont pas encore construites).
 
 **Application Streamlit (simulateur de scénarios)**
 
@@ -174,7 +195,7 @@ L'application s'ouvre dans le navigateur. Elle n'a aucun calcul propre : chaque 
 
 ## Outils
 
-Python (pandas, NumPy, SciPy, statsmodels, scikit-learn), SQL Server et SQLAlchemy, Jupyter, Matplotlib, seaborn et Plotly, Git et GitHub, Jira pour le suivi Scrum. Streamlit pour l'application de l'UA3.
+Python (pandas, NumPy, SciPy, statsmodels, scikit-learn, XGBoost), Optuna, MLflow, SHAP, SQL Server et SQLAlchemy, Jupyter et Papermill, Matplotlib, seaborn et Altair, Streamlit, pytest, Git, GitHub et nbstripout, Jira pour le suivi Scrum.
 
 ## Équipe
 

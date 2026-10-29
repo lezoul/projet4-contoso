@@ -1,6 +1,9 @@
 # Données : lourdes, partagées par OneDrive ou Teams, jamais sur GitHub
 data/
 
+# Journal MLflow (essais, modèles, figures) : se reconstruit en relançant le notebook 10
+mlruns/
+
 # Copies exécutées des notebooks (générées par run_pipeline.py)
 notebooks/executes/
 
@@ -10,10 +13,14 @@ __pycache__/
 .ipynb_checkpoints/
 .pytest_cache/
 
-# Environnement virtuel
+# Environnements virtuels
 .venv/
+.venv*/
 venv/
 env/
+
+# Streamlit : secrets éventuels d'un déploiement
+.streamlit/secrets.toml
 
 # Fichiers temporaires Office et système
 ~$*
@@ -29,16 +36,3 @@ Thumbs.db
 Autres/
 *.bak
 *.zip
-
-# Archives et fichiers lourds
-Autres/
-*.bak
-*.zip
-
-# Archives et fichiers lourds
-Autres/
-*.bak
-*.zip
-
-# Autres environnements virtuels
-.venv*/
