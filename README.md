@@ -114,7 +114,8 @@ projet4-contoso/
 │   ├── figures/                graphiques exportés par les notebooks
 │   ├── livrables/              L1 et L2 (phases, backlog), L3 et L4 (rapport et présentation de l'UA2), L5
 │   └── presentations/          présentation de l'UA1
-├── dashboards/                 application Streamlit (UA3)
+├── dashboards/
+│   └── app_simulateur.py       application Streamlit : simulateur de scénarios 2022
 ├── run_pipeline.py             exécution de tous les notebooks dans l'ordre (à venir)
 ├── requirements.txt
 └── README.md
@@ -153,6 +154,16 @@ nbstripout --install            # retire les sorties des notebooks à chaque com
 ## Exécution
 
 Les notebooks s'exécutent dans l'ordre de leur numéro : `00`, `01`, `02`, `03`, `04`, `05`, `05b`, `05c`, puis `06b`, `06`, `07`, `08`, `09`. Chacun lit le dossier de l'étape précédente et écrit dans le suivant : `raw → interim → clean → outputs`.
+
+**Application Streamlit (simulateur de scénarios)**
+
+Après le notebook 14, qui enregistre la base 2022 dans `data/outputs/scenarios/`, lancer depuis la racine du projet :
+
+```powershell
+streamlit run dashboards/app_simulateur.py
+```
+
+L'application s'ouvre dans le navigateur. Elle n'a aucun calcul propre : chaque curseur alimente `reglages(...)` et le moteur `src/simulateur.py`, le même que le notebook 14.
 
 ## Conventions
 

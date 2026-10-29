@@ -25,6 +25,10 @@ xgboost>=2.0             # gradient boosting de référence (notebook 10)
 optuna>=3.6              # recherche des hyperparamètres
 mlflow>=3.0              # suivi des essais et des modèles
 
+# Application (dashboards/app_simulateur.py)
+streamlit>=1.50
+altair>=5.0             # graphiques de l'application
+
 # Optimisation (prescriptif)
 pulp>=2.7
 
