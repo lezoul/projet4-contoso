@@ -9,6 +9,9 @@ Prérequis : avoir exécuté les notebooks 00 à 05c (données) et le notebook 1
 (base 2022 enregistrée dans data/outputs/scenarios/base_canal_2022.parquet).
 Le notebook 10 est facultatif : il ajoute la base « Random Forest ».
 
+En ligne (Streamlit Community Cloud), data/ n'existe pas : l'application lit alors le paquet
+dashboards/donnees/, écrit par python -m src.paquet_app après le notebook 14.
+
 Lancement, depuis la racine du projet :
     streamlit run dashboards/app_simulateur.py
 """
@@ -23,7 +26,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from src import config, simulateur
+from src import config, paquet_app, simulateur
 from src.simulateur import reglages
 
 EXERCICE = config.EXERCICE                       # 2021 : dernier exercice connu
@@ -67,33 +70,30 @@ def pct(valeur, decimales=1, signe=False):
 # ---------------------------------------------------------------------------
 @st.cache_data(show_spinner="Préparation des données de l'exercice…")
 def charger():
-    chemins = {
-        "commun": config.AGREGATS / "ventes_charges_boutique_mois.parquet",
-        "charges": config.CLEAN / "fait_charges.parquet",
-        "ventes": config.CLEAN / "fait_ventes_variables.parquet",
-        "dim_produit": config.CLEAN_DIMENSIONS / "dim_produit.parquet",
-        "dim_boutique": config.CLEAN_DIMENSIONS / "dim_boutique.parquet",
-        "base": config.SCENARIOS / f"base_canal_{ANNEE}.parquet",
-    }
-    manquants = [str(c.relative_to(config.ROOT)) for c in chemins.values() if not c.exists()]
-    if manquants:
-        return None, manquants
-    ventes = pd.read_parquet(chemins["ventes"], columns=["annee", "id_boutique", "id_produit", "type_boutique", "ca_net",
-                                                         "taux_remise_annonce", "montant_remise", "marge_perdue_retours"])
-    donnees = simulateur.preparer(pd.read_parquet(chemins["commun"]), pd.read_parquet(chemins["charges"]), ventes,
-                                  pd.read_parquet(chemins["dim_produit"]), pd.read_parquet(chemins["dim_boutique"]), EXERCICE)
+    """Données de l'exercice et bases de CA.
 
-    # Bases possibles : le CA de chaque boutique en 2022 si rien ne change
-    base_2021 = simulateur.base_reconduite(donnees)
-    bases = {"Lissage saisonnier (notebook 14)": simulateur.base_par_canal(donnees, pd.read_parquet(chemins["base"]).sum()),
-             f"{EXERCICE} reconduit": base_2021}
-    chemin_rf = config.PREDICTIONS / "previsions_ventes.parquet"
-    if chemin_rf.exists():
-        rf = pd.read_parquet(chemin_rf)
-        rf = rf[rf.jeu.str.startswith("Prévision")]
-        bases["Random Forest (notebook 10)"] = (rf.groupby("id_boutique").prevision.sum()
-                                                .reindex(donnees["boutiques"].id_boutique).fillna(base_2021).rename("ca_base"))
-    return {"donnees": donnees, "bases": bases}, []
+    Sur le poste : calculées à partir des tables complètes de data/ (notebooks 00 à 05c et 14).
+    En ligne, où data/ n'existe pas : lues dans le paquet dashboards/donnees/ (python -m src.paquet_app).
+    """
+    complet = [config.AGREGATS / "ventes_charges_boutique_mois.parquet", config.CLEAN / "fait_charges.parquet",
+               config.CLEAN / "fait_ventes_variables.parquet", config.CLEAN_DIMENSIONS / "dim_produit.parquet",
+               config.CLEAN_DIMENSIONS / "dim_boutique.parquet", config.SCENARIOS / f"base_canal_{ANNEE}.parquet"]
+    if all(c.exists() for c in complet):
+        donnees = paquet_app.preparer_complet()
+        tableau = paquet_app.bases_completes(donnees)
+        bases = {nom: tableau[nom].rename_axis("id_boutique").rename("ca_base") for nom in tableau.columns}
+        source = "tables complètes de data/"
+    elif paquet_app.present():
+        donnees, bases = paquet_app.charger()
+        source = "paquet dashboards/donnees/"
+    else:
+        manquants = [str(c.relative_to(config.ROOT)) for c in complet if not c.exists()]
+        return None, manquants
+    # Ordre d'affichage : lissage, 2021 reconduit, Random Forest
+    ordre = {nom: b for nom, b in bases.items() if not nom.startswith("Random")}
+    ordre[f"{EXERCICE} reconduit"] = simulateur.base_reconduite(donnees)
+    ordre.update({nom: b for nom, b in bases.items() if nom.startswith("Random")})
+    return {"donnees": donnees, "bases": ordre, "source": source}, []
 
 
 def jouer(donnees, base, reglages_):
@@ -114,7 +114,8 @@ st.caption(f"Contoso · compte de résultat recalculé boutique par boutique à 
 
 paquet, manquants = charger()
 if paquet is None:
-    st.error("Fichiers introuvables. Exécuter d'abord les notebooks 00 à 05c, puis le notebook 14 :")
+    st.error("Fichiers introuvables. Exécuter d'abord les notebooks 00 à 05c, puis le notebook 14 "
+             "(ou, pour la version en ligne, python -m src.paquet_app) :")
     st.code("\n".join(manquants))
     st.stop()
 donnees, BASES = paquet["donnees"], paquet["bases"]

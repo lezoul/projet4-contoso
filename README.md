@@ -110,6 +110,7 @@ projet4-contoso/
 │   ├── contexte.py             jours fériés et sévérité COVID-19 par pays et par jour
 │   ├── etl.py                  chargement et harmonisation des tables
 │   ├── analyse.py              fonctions statistiques partagées par les notebooks d'analyse
+│   ├── paquet_app.py           écrit le paquet de données de l'application en ligne
 │   ├── modeles.py              table de modélisation, mesure d'erreur (WAPE), prévision récursive
 │   ├── simulateur.py           moteur du simulateur de scénarios (notebook 14 et application)
 │   └── viz.py                  charte graphique commune (couleurs, police, formats)
@@ -123,7 +124,9 @@ projet4-contoso/
 │   ├── livrables/              L1 et L2 (phases, backlog), L3 et L4 (rapport et présentation de l'UA2), L5
 │   └── presentations/          présentation de l'UA1
 ├── dashboards/
-│   └── app_simulateur.py       application Streamlit : simulateur de scénarios 2022
+│   ├── app_simulateur.py       application Streamlit : simulateur de scénarios 2022
+│   ├── requirements.txt        dépendances réduites de la version en ligne
+│   └── donnees/                paquet de données agrégées lu par la version en ligne
 ├── tests/                      tests pytest du simulateur
 ├── mlruns/                     journal MLflow du notebook 10 (non versionné)
 ├── run_pipeline.py             exécution de tous les notebooks dans l'ordre (Papermill)
@@ -185,6 +188,8 @@ streamlit run dashboards/app_simulateur.py
 ```
 
 L'application s'ouvre dans le navigateur. Elle n'a aucun calcul propre : chaque curseur alimente `reglages(...)` et le moteur `src/simulateur.py`, le même que le notebook 14.
+
+**Version en ligne.** L'application est déployée sur Streamlit Community Cloud. En ligne, le dossier `data/` n'existe pas : elle lit un petit paquet de données déjà agrégées par boutique (`dashboards/donnees/`, moins de 50 Ko, sans ligne de vente ni client), avec des dépendances réduites (`dashboards/requirements.txt`). Après une nouvelle exécution du notebook 14, on régénère ce paquet avec `python -m src.paquet_app`, puis on le pousse sur GitHub : l'application en ligne se met à jour toute seule.
 
 ## Conventions
 

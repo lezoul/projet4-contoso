@@ -1,0 +1,10 @@
+{
+  "exercice": 2021,
+  "lances": 272,
+  "ca_par_nouveaute": 298113.92306580883,
+  "uplift_nouveautes_magasin": 0.24821629461907846,
+  "rapports": {
+    "nouveautés": 0.8046425263279973,
+    "anciens": 1.004367912706067
+  }
+}
